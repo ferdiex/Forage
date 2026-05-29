@@ -54,8 +54,35 @@ You can generate new ANN model files with:
 python scripts/init_ann_model.py --output models/ann_test.json --layers 9 8 4 --scale 0.1 --seed 0
 ```
 
+### ANN experiment status
+
+The ANN-based obstacle-avoidance experiments are currently **frozen as an exploratory baseline**.
+
+What was tried:
+- manual ANN weight tuning in `models/ann_test.json`
+- render and non-render experiment configs
+- turn commitment in `controllers/trained/ann_controller.py`
+- obstacle safety overrides
+- explicit unstuck routines
+
+Current outcome:
+- the ANN can move forward in open space
+- it still gets stuck oscillating left/right near obstacles
+- it is not yet a reliable obstacle-avoidance controller
+
+Recommended next step:
+- keep this ANN path as a reference baseline
+- implement a robust heuristic obstacle-avoidance controller for comparison
+- revisit ANN later with training, memory, or imitation learning
+
+Relevant files:
+- `controllers/trained/ann_controller.py`
+- `models/ann_test.json`
+- `configs/ann_test.json`
+- `configs/ann_test_render.json`
+
 ## Next steps
 
-- improve ANN experiments
-- add weight generation or training utilities
+- implement a stronger heuristic obstacle-avoidance baseline
+- revisit ANN experiments later with training or memory
 - add LSTM and transformer implementations
