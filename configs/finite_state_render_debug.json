@@ -1,0 +1,15 @@
+{
+  "experiment": {
+    "name": "finite_state_render_debug",
+    "episodes": 3,
+    "render": true,
+    "sleep": 0.01
+  },
+  "environment": {},
+  "controller": {
+    "type": "finite_state",
+    "params": {
+      "follow_side": "left"
+    }
+  }
+}

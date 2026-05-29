@@ -1,0 +1,21 @@
+{
+  "experiment": {
+    "name": "braitenberg_render_debug",
+    "episodes": 3,
+    "render": true,
+    "sleep": 0.01
+  },
+  "environment": {},
+  "controller": {
+    "type": "braitenberg",
+    "params": {
+      "obstacle_gain": 1.0,
+      "odor_gain": 0.35,
+      "clear_front_threshold": 0.4,
+      "reverse_threshold": 0.85,
+      "recovery_reverse_steps": 2,
+      "recovery_turn_steps": 4,
+      "turn_commit_steps": 2
+    }
+  }
+}

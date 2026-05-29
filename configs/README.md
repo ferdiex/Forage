@@ -12,6 +12,15 @@ python run_experiment.py --config configs/finite_state_baseline.json
 python run_experiment.py --config configs/ann_baseline.json
 ```
 
+## Render/debug examples
+
+```bash
+python run_experiment.py --config configs/heuristic_render_debug.json
+python run_experiment.py --config configs/braitenberg_render_debug.json
+python run_experiment.py --config configs/finite_state_render_debug.json
+python run_experiment.py --config configs/ann_render_debug.json
+```
+
 ## Current schema
 
 ```json
