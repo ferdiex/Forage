@@ -1,4 +1,5 @@
 import json
+from copy import deepcopy
 from pathlib import Path
 from typing import Any, Dict
 
@@ -23,9 +24,11 @@ DEFAULT_CONFIG = {
 
 
 def deep_update(base: Dict[str, Any], updates: Dict[str, Any]) -> Dict[str, Any]:
-    merged = dict(base)
+    merged = deepcopy(base)
     for key, value in updates.items():
-        if key in merged and isinstance(merged[key], dict) and isinstance(value, dict):
+        if key == "params" and isinstance(value, dict):
+            merged[key] = deepcopy(value)
+        elif key in merged and isinstance(merged[key], dict) and isinstance(value, dict):
             merged[key] = deep_update(merged[key], value)
         else:
             merged[key] = value
