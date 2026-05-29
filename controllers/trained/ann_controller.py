@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import json
 from pathlib import Path
-from typing import Any, Dict, Optional
+from typing import Any, Dict, List, Optional
 
 import numpy as np
 
@@ -10,13 +10,7 @@ from ..base import BaseController
 
 
 class ANNController(BaseController):
-    """Minimal feedforward ANN controller.
-
-    The network is a stack of linear layers with tanh activations on all hidden
-    layers and a final linear output layer. The selected action is argmax(logits).
-    A small action-commitment mechanism is used for turn actions so the controller
-    does not oscillate left/right every frame when it encounters an obstacle.
-    """
+    """Feedforward ANN controller with an explicit unstuck routine."""
 
     family = "trained"
     controller_type = "ann"
@@ -26,6 +20,12 @@ class ANNController(BaseController):
         model: Any = None,
         model_path: Optional[str] = None,
         turn_commit_steps: int = 3,
+        obstacle_threshold: float = 0.6,
+        critical_threshold: float = 0.85,
+        clear_threshold: float = 0.25,
+        reverse_steps: int = 2,
+        turn_steps: int = 8,
+        forward_steps: int = 4,
     ):
         if model is None and model_path is None:
             raise ValueError("ANNController requires either 'model' or 'model_path'.")
@@ -40,22 +40,57 @@ class ANNController(BaseController):
             raise ValueError("Model weights and biases must have the same number of layers.")
 
         self.turn_commit_steps = max(0, int(turn_commit_steps))
+        self.obstacle_threshold = float(obstacle_threshold)
+        self.critical_threshold = float(critical_threshold)
+        self.clear_threshold = float(clear_threshold)
+
+        self.reverse_steps = max(0, int(reverse_steps))
+        self.turn_steps = max(0, int(turn_steps))
+        self.forward_steps = max(0, int(forward_steps))
+
         self._committed_action: Optional[int] = None
         self._commit_remaining = 0
 
+        self._unstuck_plan: List[int] = []
+
     def act(self, obs: np.ndarray, info: Optional[Dict[str, Any]] = None) -> int:
+        obs = np.asarray(obs, dtype=np.float32)
+
+        front = float(obs[0])
+        front_left = float(obs[1])
+        front_right = float(obs[7])
+
+        if self._unstuck_plan:
+            if front <= self.clear_threshold and self._unstuck_plan[0] == 0:
+                self._unstuck_plan.clear()
+            else:
+                return int(self._unstuck_plan.pop(0))
+
         if self._commit_remaining > 0 and self._committed_action is not None:
             self._commit_remaining -= 1
             return int(self._committed_action)
 
-        x = np.asarray(obs, dtype=np.float32)
+        if front >= self.critical_threshold:
+            turn_action = 1 if front_left < front_right else 2
+            self._unstuck_plan = (
+                [3] * self.reverse_steps
+                + [turn_action] * self.turn_steps
+                + [0] * self.forward_steps
+            )
+            return int(self._unstuck_plan.pop(0))
 
+        x = obs
         for i, (weight, bias) in enumerate(zip(self.weights, self.biases)):
             x = x @ weight + bias
             if i < len(self.weights) - 1:
                 x = np.tanh(x)
 
         action = int(np.argmax(x))
+
+        if front >= self.obstacle_threshold and action == 0:
+            turn_action = 1 if front_left < front_right else 2
+            self._unstuck_plan = [turn_action] * self.turn_steps + [0] * self.forward_steps
+            return int(self._unstuck_plan.pop(0))
 
         if action in (1, 2) and self.turn_commit_steps > 0:
             self._committed_action = action
