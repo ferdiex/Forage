@@ -1,43 +1,55 @@
-# ForagingEnv
+# Forage
 
-Minimal 2D foraging environment for comparing MLP, LSTM, and Transformer policies under partial observability.
+A small Python repository for experimenting with foraging controllers in a 2D environment.
 
-## Stack
-- Python
-- Gymnasium
-- NumPy
-- pygame
+## Current controller taxonomy
 
-## Files
-- `config.py`: environment parameters
-- `foraging_env.py`: Gymnasium environment
-- `demo_random_agent.py`: simple random-agent demo
+Controllers are organized into two top-level families:
 
-## Install
+- `designed`
+- `trained`
+
+### Designed controllers
+- `random`
+- `braitenberg`
+- `heuristic`
+- `finite_state`
+
+### Trained controllers
+- `ann`
+- `lstm`
+- `transformer`
+
+## Current baseline status
+
+- `heuristic` is currently the strongest manual baseline
+- `finite_state` is an intermediate stateful baseline
+- `braitenberg` is a reactive illustrative baseline
+- `random` is the trivial baseline
+
+## JSON experiment runner
+
+Experiments can now be configured with JSON files and run through a shared runner.
+
+Examples:
+
 ```bash
-pip install gymnasium numpy pygame
+python run_experiment.py --config configs/random_baseline.json
+python run_experiment.py --config configs/braitenberg_baseline.json
+python run_experiment.py --config configs/heuristic_baseline.json
+python run_experiment.py --config configs/finite_state_baseline.json
 ```
 
-## Run demo
-```bash
-python demo_random_agent.py
-```
+## Minimal ANN controller
 
-## Current features
-- 2D world
-- one robot
-- one food source
-- obstacle field
-- 8 proximity sensors
-- 1 scalar odor signal
-- sparse reward
-- termination by success or timeout
-- non-terminal collisions
+The repository now includes a minimal feedforward ANN controller that can:
+
+- load weights and biases from JSON
+- run feedforward inference
+- choose a discrete action from logits
 
 ## Next steps
-- refine sensor model
-- refine collision behavior
-- add map templates
-- add debug info
-- add training script
-- add heuristic controller
+
+- improve ANN experiments
+- add weight generation or training utilities
+- add LSTM and transformer implementations

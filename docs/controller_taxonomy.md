@@ -7,28 +7,53 @@ This repository organizes controllers into two top-level families:
 
 ## Designed controllers
 
-- `random`
-- `braitenberg`
-- `heuristic`
-- `finite_state`
+### `random`
+Minimal baseline with no task structure.
+
+### `braitenberg`
+Reactive obstacle-avoidance controller with very limited competence.
+It is mainly useful as an illustrative embodied-reactive baseline.
+
+### `finite_state`
+Simple stateful controller with `explore`, `avoid`, and `recover` modes.
+It currently performs as an intermediate designed baseline.
+
+### `heuristic`
+Current strongest hand-designed baseline in the repository.
+It combines wall-following, stuck recovery, and local odor-aware bias.
 
 ## Trained controllers
 
-- `ann`
-- `lstm`
-- `transformer`
+### `ann`
+Now supports a minimal feedforward inference path using JSON-defined weights.
+This is the first functional trained-controller slot.
 
-## Notes
+### `lstm`
+Placeholder for future recurrent controller experiments.
 
-At this stage, the repository includes:
+### `transformer`
+Placeholder for future transformer-based policy experiments.
 
-- working designed-controller implementations for the current environment
-- placeholders for trained-controller families
-- a small factory to instantiate controllers by name
+## Experiment workflow
 
-Planned next layers:
+The repository now includes a JSON-based experiment workflow:
 
-- JSON config loader
-- experiment runner
+- `configs/*.json` define experiment settings
+- `run_experiment.py` loads a config and runs the selected controller
+- controller parameters are passed through the shared controller factory
+
+## Current qualitative ranking
+
+At the current stage, the designed-controller baselines are roughly:
+
+1. `heuristic` — strongest manual baseline
+2. `finite_state` — intermediate stateful baseline
+3. `braitenberg` — reactive illustrative baseline
+4. `random` — trivial baseline
+
+## Planned next layers
+
+- richer ANN experiments and weight generation
 - training code
 - optimizers and losses
+- recurrent and transformer-based trained controllers
