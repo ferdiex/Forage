@@ -34,6 +34,8 @@ class FiniteStateController(BaseController):
     def act(self, obs: np.ndarray, info: Optional[Dict[str, Any]] = None) -> int:
         info = info or {}
         prox = obs[:8]
+        odor = float(obs[8]) if len(obs) > 8 else 0.0
+
         front = float(prox[0])
         front_left = float(prox[1])
         left = float(prox[2])
@@ -46,6 +48,10 @@ class FiniteStateController(BaseController):
 
         preferred_turn = 1 if self.follow_side == "left" else 2
         opposite_turn = 2 if self.follow_side == "left" else 1
+        follow_sensor = left if self.follow_side == "left" else right
+        opposite_sensor = right if self.follow_side == "left" else left
+        front_corner = front_left if self.follow_side == "left" else front_right
+        opposite_front_corner = front_right if self.follow_side == "left" else front_left
 
         if self._looks_stuck() and self.state != "recover":
             self.state = "recover"
@@ -58,17 +64,33 @@ class FiniteStateController(BaseController):
                 self.state_steps = 4
             return 3
 
-        if front > 0.55 or max(front_left, front_right) > 0.60:
+        severe_front_block = front > 0.60 or max(front_left, front_right) > 0.70
+        moderate_front_block = front > 0.35 or front_corner > 0.45 or opposite_front_corner > 0.55
+
+        if severe_front_block:
             self.state = "avoid"
-            self.state_steps = max(self.state_steps, 3)
+            self.state_steps = max(self.state_steps, 4)
 
         if self.state == "avoid":
             self.state_steps -= 1
             if self.state_steps <= 0:
                 self.state = "explore"
-            side_pressure = left if self.follow_side == "left" else right
-            if side_pressure > 0.80:
+
+            if follow_sensor > 0.80:
                 return opposite_turn
+            if opposite_sensor > 0.85:
+                return preferred_turn
+            return preferred_turn
+
+        if moderate_front_block:
+            self.state = "avoid"
+            self.state_steps = 2
+            return preferred_turn
+
+        if odor > 0.0 and front < 0.30:
+            return 0
+
+        if 0.0 < follow_sensor < 0.18 and front < 0.30:
             return preferred_turn
 
         if front < 0.30:
