@@ -1,36 +1,28 @@
 import numpy as np
 
 from config import ForagingEnvConfig
+from controllers.factory import make_controller
 from foraging_env import ForagingEnv
-from heuristic_agent import OdorAwareWallFollowerController
 
 
-def run_random_episode(env: ForagingEnv):
+EPISODE_CONTROLLERS = [
+    ("random", {}, "Random Agent"),
+    ("braitenberg", {}, "Braitenberg Agent"),
+    ("heuristic", {"follow_side": "left"}, "Heuristic Agent"),
+    ("finite_state", {"follow_side": "left"}, "Finite State Agent"),
+]
+
+
+def run_episode(env: ForagingEnv, controller_type: str, controller_kwargs: dict):
+    controller = make_controller(controller_type, **controller_kwargs)
+    controller.reset()
+
     obs, info = env.reset()
     done = False
     total_reward = 0.0
 
     while not done:
-        action = env.action_space.sample()
-        obs, reward, terminated, truncated, info = env.step(action)
-        total_reward += reward
-        done = terminated or truncated
-
-    return {
-        "success": info["success"],
-        "steps": info["step_count"],
-        "distance_to_food": info["distance_to_food"],
-        "total_reward": total_reward,
-    }
-
-
-def run_heuristic_episode(env: ForagingEnv, controller: OdorAwareWallFollowerController):
-    obs, info = env.reset()
-    done = False
-    total_reward = 0.0
-
-    while not done:
-        action = controller.choose_action(obs, info)
+        action = controller.act(obs, info)
         obs, reward, terminated, truncated, info = env.step(action)
         total_reward += reward
         done = terminated or truncated
@@ -62,23 +54,15 @@ def main():
     num_episodes = 30
     config = ForagingEnvConfig()
 
-    random_env = ForagingEnv(config=config, render_mode=None)
-    heuristic_env = ForagingEnv(config=config, render_mode=None)
+    for controller_type, controller_kwargs, label in EPISODE_CONTROLLERS:
+        env = ForagingEnv(config=config, render_mode=None)
+        results = []
 
-    random_results = []
-    for _ in range(num_episodes):
-        random_results.append(run_random_episode(random_env))
+        for _ in range(num_episodes):
+            results.append(run_episode(env, controller_type, controller_kwargs))
 
-    heuristic_results = []
-    for _ in range(num_episodes):
-        controller = OdorAwareWallFollowerController(follow_side="left")
-        heuristic_results.append(run_heuristic_episode(heuristic_env, controller))
-
-    random_env.close()
-    heuristic_env.close()
-
-    summarize(random_results, "Random Agent")
-    summarize(heuristic_results, "Heuristic Agent")
+        env.close()
+        summarize(results, label)
 
 
 if __name__ == "__main__":

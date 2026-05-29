@@ -1,20 +1,22 @@
 import time
 
-from foraging_env import ForagingEnv
 from config import ForagingEnvConfig
+from controllers.factory import make_controller
+from foraging_env import ForagingEnv
 
 
 def main():
     env = ForagingEnv(ForagingEnvConfig(), render_mode="human")
-    obs, info = env.reset()
+    controller = make_controller("random")
 
     try:
         for episode in range(5):
+            controller.reset()
             obs, info = env.reset()
             done = False
 
             while not done:
-                action = env.action_space.sample()
+                action = controller.act(obs, info)
                 obs, reward, terminated, truncated, info = env.step(action)
                 done = terminated or truncated
                 time.sleep(0.03)
