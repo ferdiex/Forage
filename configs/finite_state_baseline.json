@@ -1,0 +1,15 @@
+{
+  "experiment": {
+    "name": "finite_state_baseline",
+    "episodes": 30,
+    "render": false,
+    "sleep": 0.03
+  },
+  "environment": {},
+  "controller": {
+    "type": "finite_state",
+    "params": {
+      "follow_side": "left"
+    }
+  }
+}

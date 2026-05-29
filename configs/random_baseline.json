@@ -1,0 +1,13 @@
+{
+  "experiment": {
+    "name": "random_baseline",
+    "episodes": 30,
+    "render": false,
+    "sleep": 0.03
+  },
+  "environment": {},
+  "controller": {
+    "type": "random",
+    "params": {}
+  }
+}

@@ -1,0 +1,15 @@
+{
+  "experiment": {
+    "name": "heuristic_baseline",
+    "episodes": 30,
+    "render": false,
+    "sleep": 0.03
+  },
+  "environment": {},
+  "controller": {
+    "type": "heuristic",
+    "params": {
+      "follow_side": "left"
+    }
+  }
+}

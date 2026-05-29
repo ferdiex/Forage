@@ -1,4 +1,4 @@
-from dataclasses import dataclass
+from dataclasses import asdict, dataclass
 from typing import Tuple
 import math
 
@@ -36,3 +36,10 @@ class ForagingEnvConfig:
     @property
     def turn_angle_rad(self) -> float:
         return math.radians(self.turn_angle_deg)
+
+    @classmethod
+    def from_dict(cls, data: dict) -> "ForagingEnvConfig":
+        return cls(**data)
+
+    def to_dict(self) -> dict:
+        return asdict(self)
